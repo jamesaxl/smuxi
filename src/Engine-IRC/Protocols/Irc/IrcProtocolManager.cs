@@ -738,6 +738,10 @@ namespace Smuxi.Engine
                             CommandJoin(command);
                             handled = true;
                             break;
+                        case "dcc":
+                            CommandDcc(command);
+                            handled = true;
+                            break;
                         case "msg":
                             CommandMessage(command);
                             handled = true;
@@ -1030,6 +1034,7 @@ namespace Smuxi.Engine
             string[] help = {
             "connect irc server [port|+port] [password] [nicknames]",
             "say",
+            "dcc",
             "join/j channel(s) [key]",
             "part/p [channel(s)] [part-message]",
             "topic [new-topic]",
@@ -1131,6 +1136,21 @@ namespace Smuxi.Engine
         public void CommandSay(CommandModel cd)
         {
             _Say(cd.Chat, cd.Parameter);
+        }
+
+        public void CommandDcc(CommandModel cd)
+        {
+            var builder = CreateMessageBuilder();
+            if (cd.DataArray.Length < 3) {
+                NotEnoughParameters(cd);
+                return;
+            }
+            var line = "sending file " + cd.DataArray [1] + " to " + cd.DataArray [2];
+            builder.AppendEventPrefix();
+            builder.AppendText(line);
+            var send = new IrcFeatures();
+            send.SendFile(cd.DataArray [1], cd.DataArray [2]);
+            Session.AddMessageToFrontend(cd, builder.ToMessage());
         }
         
         private void _Say(ChatModel chat, string message)
